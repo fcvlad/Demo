@@ -1,5 +1,6 @@
 ﻿using Demo.Data;
 using Demo.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,57 +21,109 @@ namespace Demo.Services
 
         public void AddCompany(Company company)
         {
-            throw new NotImplementedException();
+            if (company == null)
+            {
+                throw new ArgumentNullException(nameof(company));
+            }
+            company.Id = Guid.NewGuid();
+            foreach (var employee in company.Employees)
+            {
+                employee.Id = Guid.NewGuid();
+            }
+            _context.Companies.Add(company);
         }
 
         public void AddEmployee(Guid companyId, Employee employee)
         {
-            throw new NotImplementedException();
+            if (companyId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(companyId));
+            }
+            if (employee == null)
+            {
+                throw new ArgumentNullException(nameof(employee));
+            }
+            employee.CompanyId = companyId;
+            _context.employees.Add(employee);
         }
 
-        public Task<bool> CompanyExistsAsync(Guid companyId)
+        public async Task<bool> CompanyExistsAsync(Guid companyId)
         {
-            throw new NotImplementedException();
+            if (companyId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(companyId));
+            }
+            return await _context.Companies.AnyAsync(x => x.Id == companyId);
         }
 
         public void DeleteCompany(Company company)
         {
-            throw new NotImplementedException();
+            _context.Companies.Remove(company);
         }
 
         public void DeleteEmployee(Employee employee)
         {
-            throw new NotImplementedException();
+            _context.employees.Remove(employee);
         }
 
-        public Task<IEnumerable<Company>> GetCompaniesAsync(IEnumerable<Guid> companyIds)
+        public async Task<IEnumerable<Company>> GetCompaniesAsync(IEnumerable<Guid> companyIds)
         {
-            throw new NotImplementedException();
+            if (companyIds == null)
+            {
+                throw new ArgumentNullException(nameof(companyIds));
+            }
+            return await _context.Companies.Where(x => companyIds.Contains(x.Id)).ToListAsync();
         }
 
-        public Task<Company> GetCompanyAsync(Guid companyId)
+        public async Task<IEnumerable<Company>> GetCompaniesAsync()
         {
-            throw new NotImplementedException();
+            return await _context.Companies.ToListAsync();
         }
 
-        public Task<Employee> GetEmployeeAsync(Guid companyId, Guid employeeId)
+        public async Task<Company> GetCompanyAsync(Guid companyId)
         {
-            throw new NotImplementedException();
+            if (companyId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(companyId));
+            }
+            return await _context.Companies.FirstOrDefaultAsync(x => x.Id == companyId);
         }
 
-        public Task<bool> SaveAsync()
+        public async Task<Employee> GetEmployeeAsync(Guid companyId, Guid employeeId)
         {
-            throw new NotImplementedException();
+            if (companyId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(companyId));
+            }
+            if (employeeId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+            return await _context.employees.Where(x => x.CompanyId == companyId&&x.Id==employeeId).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Employee>> GetEmployeesAsync(Guid companyId)
+        {
+            if (companyId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(companyId));
+            }
+            return await _context.employees.Where(x => x.CompanyId == companyId).OrderBy(x => x.EmployeeNo).ToListAsync();
+        }
+
+        public async Task<bool> SaveAsync()
+        {
+            return await _context.SaveChangesAsync() >= 0;
         }
 
         public void UpdateCompany(Company company)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void UpdateEmployee(Employee employee)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

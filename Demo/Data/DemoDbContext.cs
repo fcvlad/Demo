@@ -21,6 +21,7 @@ namespace Demo.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder);
             builder.Entity<Employee>()
                 .HasOne(x => x.Company)
                 .WithMany(x => x.Employees)

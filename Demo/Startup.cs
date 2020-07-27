@@ -52,6 +52,18 @@ namespace Demo
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                //¶¨Òå·µ»Ø¹ÊÕÏ
+                app.UseExceptionHandler(appBulider=> 
+                {
+                    appBulider.Run(async context =>
+                  {
+                      context.Response.StatusCode = 500;
+                      await context.Response.WriteAsync("Unexpected Error!");
+                  });
+                });
+            }
             app.UseHsts();
             app.UseRouting();
 

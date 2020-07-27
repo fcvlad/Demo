@@ -37,12 +37,7 @@ namespace Demo.Controllers
             {
                 return NotFound();             
             }
-            var result= await _signInManager.PasswordSignInAsync(user, UserAdd.Password, false, false);
-            if (result.Succeeded)
-            {
-                return Ok();
-            }
-            return BadRequest();
+            return Ok();
         }
     }
 }

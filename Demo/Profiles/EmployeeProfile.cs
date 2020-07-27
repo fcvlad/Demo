@@ -17,7 +17,9 @@ namespace Demo.Profiles
                 .ForMember(dest=>dest.GenderDisplay,opt=>opt.MapFrom(src=>src.Gender.ToString()))
                 .ForMember(dest=>dest.Age,opt=>opt.MapFrom(src=>DateTime.Now.Year-src.DateOfBirth.Year))
                 ;
-            CreateMap<EmpolyeeAddDto,Employee>();
+            CreateMap<EmpolyeeAddOrUpdateDto,Employee>();
+            CreateMap<EmployeeUpdateDto, Employee>();
+            CreateMap<Employee, EmployeeUpdateDto>();
         }
     }
 }

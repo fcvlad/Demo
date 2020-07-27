@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Demo.Models
 {
-    public class EmpolyeeAddDto:EmployeeUpdateDto
+    public class EmployeeUpdateDto:EmpolyeeAddOrUpdateDto
     {
     }
 }

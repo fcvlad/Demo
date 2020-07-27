@@ -1,21 +1,16 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Demo.Data;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Demo.Models;
 using Demo.Services;
+using Newtonsoft.Json.Serialization;
 
 namespace Demo
 {
@@ -31,7 +26,11 @@ namespace Demo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddXmlDataContractSerializerFormatters();
+            services.AddControllers().AddNewtonsoftJson(setup =>
+            {
+                setup.SerializerSettings.ContractResolver =
+                    new CamelCasePropertyNamesContractResolver();
+            }).AddXmlDataContractSerializerFormatters();
             services.AddScoped<ICompanyRepository,CompanyRepository>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddDbContext<DemoDbContext>(option=> { option.UseSqlServer(Configuration.GetConnectionString("SqlDB")); });

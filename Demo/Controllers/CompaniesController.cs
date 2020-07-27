@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Demo.DtoParameters;
 using Demo.Entities;
+using Demo.Helps;
 using Demo.Models;
 using Demo.Services;
 using Microsoft.AspNetCore.Http;
@@ -63,6 +64,43 @@ namespace Demo.Controllers
                 _companyRepository.AddCompany(company);
             }
             await _companyRepository.SaveAsync();
+            var returnDtos = _mapper.Map<IEnumerable<CompanyDto>>(companyEntities);
+            var idsString = string.Join(",", returnDtos.Select(x => x.Id));
+            return CreatedAtRoute(nameof(GetCompanyCollection),new { ids=idsString} , returnDtos);
+        }
+        [HttpGet("({ids})",Name =(nameof(GetCompanyCollection)))]
+        public async Task<IActionResult> GetCompanyCollection([FromRoute] [ModelBinder(BinderType =typeof(ArrayModelBinder))]IEnumerable<Guid> ids)
+        {
+            if (ids == null)
+            {
+                return BadRequest();
+            }
+            var entities = await _companyRepository.GetCompaniesAsync(ids);
+            if (ids.Count() != entities.Count())
+            {
+                return NotFound();
+            }
+            var RetrunDto = _mapper.Map<IEnumerable<CompanyDto>>(entities);
+            return Ok(RetrunDto);
+        }
+        [HttpDelete("{companyId}")]
+        public async Task<IActionResult> DeleteCompany(Guid companyId)
+        {
+            var companyEntity = await _companyRepository.GetCompanyAsync(companyId);
+            if (companyEntity == null)
+            {
+                return NotFound();
+            }
+            _companyRepository.DeleteCompany(companyEntity);
+            await _companyRepository.SaveAsync();
+
+            return NoContent();
+        }
+
+        [HttpOptions]
+        public  IActionResult GetCompaniesOptions()
+        {
+            Response.Headers.Add("Allow","GET,POST,OPTIONS");
             return Ok();
         }
 

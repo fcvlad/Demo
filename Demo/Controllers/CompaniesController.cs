@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using Demo.DtoParameters;
@@ -10,6 +12,8 @@ using Demo.Models;
 using Demo.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Demo.Controllers
 {
@@ -25,11 +29,25 @@ namespace Demo.Controllers
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(companyRepository));
         }
-        [HttpGet]
+        [HttpGet(Name =(nameof(GetCompanies)))]
         [HttpHead]
         public async Task<IActionResult> GetCompanies([FromQuery] CompanyDtoParameters parameters)//指定绑定来源
         {
             var companies = await _companyRepository.GetCompaniesAsync(parameters);
+            var previousPageLink = companies.HasPrevious ? CreateCompaniesResoureUri(parameters, ResourceUriType.PreviousPage) : null;
+            var nextPageLink = companies.HasNext ? CreateCompaniesResoureUri(parameters, ResourceUriType.NextPage) : null;
+            var pageinationMetadata = new
+            {
+                totalCount=companies.TotalCount,
+                pageSize=companies.PageSize,
+                currentPage=companies.CurrentPage,
+                totalPages=companies.TotalPages,
+                previousPageLink,
+                nextPageLink
+            };
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pageinationMetadata, 
+                new JsonSerializerOptions{ Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
             var companyDtos = _mapper.Map<IEnumerable<CompanyDto>>(companies);
             return Ok(companyDtos);
         }
@@ -102,6 +120,42 @@ namespace Demo.Controllers
         {
             Response.Headers.Add("Allow","GET,POST,OPTIONS");
             return Ok();
+        }
+        /// <summary>
+        /// 分页方法
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private string CreateCompaniesResoureUri(CompanyDtoParameters parameter, ResourceUriType type)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return Url.Link(nameof(GetCompanies),new
+                    {
+                        pageNumber = parameter.PageNumber - 1,
+                        pageSzie = parameter.PageSize,
+                        companyName = parameter.CompanyName,
+                        searchTerm = parameter.SearchTerm
+                    });
+                case ResourceUriType.NextPage:
+                    return Url.Link(nameof(GetCompanies), new
+                    {
+                        pageNumber = parameter.PageNumber + 1,
+                        pageSzie = parameter.PageSize,
+                        companyName = parameter.CompanyName,
+                        searchTerm = parameter.SearchTerm
+                    });
+                default:
+                    return Url.Link(nameof(GetCompanies), new
+                    {
+                        pageNumber = parameter.PageNumber,
+                        pageSzie = parameter.PageSize,
+                        companyName = parameter.CompanyName,
+                        searchTerm = parameter.SearchTerm
+                    });
+            }
         }
 
     }

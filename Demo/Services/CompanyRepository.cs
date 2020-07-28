@@ -1,6 +1,7 @@
 ﻿using Demo.Data;
 using Demo.DtoParameters;
 using Demo.Entities;
+using Demo.Helps;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -80,16 +81,11 @@ namespace Demo.Services
             return await _context.Companies.Where(x => companyIds.Contains(x.Id)).ToListAsync();
         }
 
-        public async Task<IEnumerable<Company>> GetCompaniesAsync(CompanyDtoParameters parameters)
+        public async Task<PagedList<IEnumerable<Company>>> GetCompaniesAsync(CompanyDtoParameters parameters)
         {
             if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
-            }
-            if (string.IsNullOrWhiteSpace(parameters.CompanyName) &&
-                string.IsNullOrWhiteSpace(parameters.SearchTerm))
-            {
-                return await _context.Companies.ToListAsync();
             }
             var queryExpression = _context.Companies as IQueryable<Company>;
             if (!string.IsNullOrWhiteSpace(parameters.CompanyName))
@@ -102,7 +98,7 @@ namespace Demo.Services
                 parameters.SearchTerm = parameters.SearchTerm.Trim();
                 queryExpression = queryExpression.Where(x => x.Name.Contains(parameters.SearchTerm) || x.Introduction.Contains(parameters.SearchTerm));
             }
-            return await queryExpression.ToListAsync();
+            return await PagedList<Company>.Create(queryExpression, parameters, parameters);
         }
 
         public async Task<Company> GetCompanyAsync(Guid companyId)

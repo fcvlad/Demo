@@ -12,6 +12,7 @@ using Demo.Models;
 using Demo.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -23,11 +24,13 @@ namespace Demo.Controllers
     {
         private readonly ICompanyRepository _companyRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<CompaniesController> _logger;
 
-        public CompaniesController(ICompanyRepository companyRepository, IMapper mapper)
+        public CompaniesController(ICompanyRepository companyRepository, IMapper mapper,ILogger<CompaniesController> logger)
         {
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(companyRepository));
+            _logger = logger??throw new ArgumentNullException(nameof(logger));
         }
         [HttpGet(Name =(nameof(GetCompanies)))]
         [HttpHead]
@@ -49,6 +52,7 @@ namespace Demo.Controllers
                 new JsonSerializerOptions{ Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 
             var companyDtos = _mapper.Map<IEnumerable<CompanyDto>>(companies);
+            _logger.LogError("Error");
             return Ok(companyDtos);
         }
         [HttpGet("{companyId}", Name = nameof(GetCompany))]

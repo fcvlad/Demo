@@ -10,7 +10,7 @@ namespace Demo.Services
 {
     public interface ICompanyRepository
     {
-        Task<PagedList<IEnumerable<Company>>>GetCompaniesAsync(CompanyDtoParameters parameters);
+        Task<PagedList<Company>>GetCompaniesAsync(CompanyDtoParameters parameters);
         Task<Company> GetCompanyAsync(Guid companyId);
         Task<IEnumerable<Company>> GetCompaniesAsync(IEnumerable<Guid> companyIds);
         void AddCompany(Company company);

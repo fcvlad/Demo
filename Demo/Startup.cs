@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Demo.Models;
 using Demo.Services;
 using Newtonsoft.Json.Serialization;
+using Marvin.Cache.Headers;
+using Microsoft.OpenApi.Models;
 
 namespace Demo
 {
@@ -26,6 +28,24 @@ namespace Demo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSwaggerGen(c => 
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo()
+                {
+                    Version = "v1",
+                    Title = "Demo",
+                    Description = "v1°æ±¾µÄApi"
+                });
+            }) ;
+            services.AddHttpCacheHeaders(expris=>
+                {
+                    expris.MaxAge = 60;
+                    expris.CacheLocation = CacheLocation.Private;
+                }, validation =>
+                {
+                    validation.MustRevalidate = true;
+                }
+                );
             services.AddControllers().AddNewtonsoftJson(setup =>
             {
                 setup.SerializerSettings.ContractResolver =
@@ -63,6 +83,11 @@ namespace Demo
                   });
                 });
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c=> {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json","v1");
+            });
+            app.UseHttpCacheHeaders();
             app.UseHsts();
             app.UseRouting();
 

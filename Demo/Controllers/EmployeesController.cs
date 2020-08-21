@@ -6,6 +6,7 @@ using AutoMapper;
 using Demo.Entities;
 using Demo.Models;
 using Demo.Services;
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,8 @@ namespace Demo.Controllers
             return Ok(employeeDtos);
         }
         [HttpGet("{employeeId}",Name =(nameof(GetEmployeeForCompany)))]
+        [HttpCacheExpiration(CacheLocation=CacheLocation.Public,MaxAge =1800)]
+        [HttpCacheValidation(MustRevalidate =false)]
         public async Task<ActionResult<EmployeeDto>> GetEmployeeForCompany(Guid companyId,Guid employeeId)
         {
             if (!await _companyRepository.CompanyExistsAsync(companyId))

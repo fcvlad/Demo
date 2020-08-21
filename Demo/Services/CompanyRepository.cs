@@ -81,7 +81,7 @@ namespace Demo.Services
             return await _context.Companies.Where(x => companyIds.Contains(x.Id)).ToListAsync();
         }
 
-        public async Task<PagedList<IEnumerable<Company>>> GetCompaniesAsync(CompanyDtoParameters parameters)
+        public async Task<PagedList<Company>> GetCompaniesAsync(CompanyDtoParameters parameters)
         {
             if (parameters == null)
             {
@@ -98,7 +98,7 @@ namespace Demo.Services
                 parameters.SearchTerm = parameters.SearchTerm.Trim();
                 queryExpression = queryExpression.Where(x => x.Name.Contains(parameters.SearchTerm) || x.Introduction.Contains(parameters.SearchTerm));
             }
-            return await PagedList<Company>.Create(queryExpression, parameters, parameters);
+            return await PagedList<Company>.CreateAsync(queryExpression, parameters.PageNumber, parameters.PageSize);
         }
 
         public async Task<Company> GetCompanyAsync(Guid companyId)
